@@ -34,15 +34,21 @@ int binary_search(int a[], int key){
 
 int main(void){
     int a[SIZE];
+    int _a0, _a1, _a2;
     int key;
     int i, result;
 
 #ifdef KLEE
-    klee_make_symbolic(a, sizeof(a), "a");
+    klee_make_symbolic(&_a0, sizeof(int), "a0");
+    klee_make_symbolic(&_a1, sizeof(int), "a1");
+    klee_make_symbolic(&_a2, sizeof(int), "a2");
     klee_make_symbolic(&key, sizeof(key), "key");
-    for(i=0; i<SIZE-1; i++){
-        klee_assume(a[i] <= a[i+1]);
-    }
+    klee_assume(_a0 <= _a1);
+    klee_assume(_a1 <= _a2);
+    //klee_range(_a0 - 1, _a2 + 1, "key");
+    a[0] = _a0;
+    a[1] = _a1;
+    a[2] = _a2;
 #endif
     result = binary_search(a, key);
     if(result >= 0){
