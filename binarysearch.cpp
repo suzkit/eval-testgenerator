@@ -11,7 +11,7 @@ int binary_search(int a[], int key){
     int high = SIZE;
     int i;
 
-    while (low <= high){
+    while (low < high){
         int mid = low + (high - low) / 2;
         int midVal = a[mid];
 
