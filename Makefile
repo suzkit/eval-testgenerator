@@ -17,16 +17,14 @@ cov: $(bc) $(bin)
 	gcov -b $<
 	TZ=-9 lcov -c -b . -d . -o $(lcovfile)
 	genhtml -o html $(lcovfile)
+	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
+	klee-stats klee-last > klee-last/klee-stats.txt
 
 klee:
 	klee $(bc)
-	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
-	klee-stats klee-last > klee-last/klee-stats.txt
 
 kleeopt:
 	klee --optimize $(bc)
-	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
-	klee-stats klee-last > klee-last/klee-stats.txt
 
 kleestat:
 	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
