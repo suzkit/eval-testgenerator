@@ -9,12 +9,13 @@ $(bc): $(src)
 	clang -I ../../include -emit-llvm -DKLEE -c -g -O0 -Xclang -disable-O0-optnone $<
 
 $(bin): $(src)
-	gcc -g -fprofile-arcs -ftest-coverage -o $@ $< -lgcov
+	g++ -I ../../include -L/home/klee/klee_build/lib/ -DKLEE -g -fprofile-arcs -ftest-coverage -o $@ $< -lkleeRuntest -lgcov
 
 cov: $(bc) $(bin)
 	klee $(bc)
-	klee-replay $(bin) klee-last/*ktest
-	gcov -b $<
+	#klee-replay $(bin) klee-last/*ktest
+	./klee-replay.sh
+	gcov -b $(bin)
 	TZ=-9 lcov -c -b . -d . -o $(lcovfile)
 	genhtml -o html $(lcovfile)
 	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
@@ -25,6 +26,8 @@ klee:
 
 kleeopt:
 	klee --optimize $(bc)
+	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
+	klee-stats klee-last > klee-last/klee-stats.txt
 
 kleestat:
 	ktest-tool klee-last/*ktest > klee-last/ktest-tool-result.txt
