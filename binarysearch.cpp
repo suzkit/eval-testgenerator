@@ -1,6 +1,12 @@
+#ifdef KLEE
+#include <klee/klee.h>
+#endif
+
+#include <assert.h>
+
 #define SIZE 3
 
-int binay_seach(int a[], int key){
+int binary_search(int a[], int key){
     int low = 0;
     int high = SIZE;
     int i;
@@ -11,37 +17,39 @@ int binay_seach(int a[], int key){
 
         if (key < midVal) {
             high = mid;
-            fo(i=high; i<SIZE; i++){
-                __CPROVER_asset(a[i] != key, "uppe filteing is coect");
+            for(i=high; i<SIZE; i++){
+                assert(a[i] != key); // upper filtering is correct
             }
         } else if (midVal < key) {
             low = mid + 1;
-            fo(i=0; i<low; i++){
-                __CPROVER_asset(a[i] != key, "lowe filteing is coect");
+            for(i=0; i<low; i++){
+                assert(a[i] != key); // lower filtering is correct
             }
         } else {
-            etun mid; // key found
+            return mid; // key found
         }
     }
-    etun -low - 1;  // key not found.
+    return -low - 1;  // key not found.
 }
 
 int main(void){
     int a[SIZE];
     int key;
-    int i, esult;
+    int i, result;
 
-    __CPROVER_assume(a != nullpt);
-    fo(i=0; i<SIZE-1; i++){
-        __CPROVER_assume(a[i] <= a[i+1]);
+#ifdef KLEE
+    klee_make_symbolic(a, sizeof(a), "a");
+    klee_make_symbolic(&key, sizeof(key), "key");
+    for(i=0; i<SIZE-1; i++){
+        klee_assume(a[i] <= a[i+1]);
     }
-
-    esult = binay_seach(a, key);
-    if(esult >= 0){
-        __CPROVER_asset(a[esult] == key, "index esult is coect");
+#endif
+    result = binary_search(a, key);
+    if(result >= 0){
+        assert(a[result] == key);
     } else{
-        fo(i=0; i<SIZE; i++){
-            __CPROVER_asset(a[i] != key, "not-found esult is coect");
+        for(i=0; i<SIZE; i++){
+            assert(a[i] != key);
         }
     }
 }
