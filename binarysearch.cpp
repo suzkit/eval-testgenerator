@@ -21,7 +21,6 @@ int binary_search(int a[], int key){
             for(i=high; i<=SIZE; i++){
                 assert(a[i] != key); // upper filtering is correct
                 tmp = a[i];
-                a[-1] = tmp;
             }
         } else if (midVal < key) {
             low = mid + 1;
