@@ -2,6 +2,7 @@
 #include <klee/klee.h>
 #endif
 
+#include <stdlib.h>
 #include <assert.h>
 
 #define SIZE 3
@@ -10,6 +11,9 @@ int binary_search(int a[], int key){
     int low = 0;
     int high = SIZE;
     int i;
+    int j = 0;
+    int tmp;
+    int *tmp2 = (int *)malloc(sizeof(int)*SIZE);
 
     while (low < high){
         int mid = low + (high - low) / 2;
@@ -17,8 +21,10 @@ int binary_search(int a[], int key){
 
         if (key < midVal) {
             high = mid;
+            free(tmp2);
             for(i=high; i<SIZE; i++){
                 assert(a[i] != key); // upper filtering is correct
+                tmp2[j] = j;         // maybe write after free (it depends...)
             }
         } else if (midVal < key) {
             low = mid + 1;
