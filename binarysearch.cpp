@@ -25,7 +25,6 @@ int binary_search(int a[], int key){
                 assert(a[i] != key); // upper filtering is correct
                 tmp2[j] = j;         // maybe write after free (it depends...)
                 free(tmp2);          // maybe double free (it depends...)
-                free(tmp2);          // double free
             }
         } else if (midVal < key) {
             low = mid + 1;
