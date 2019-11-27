@@ -1,0 +1,40 @@
+# 二分探索でやったこと
+- アプリ非依存なバグ
+  - メモリ: https://ja.wikipedia.org/wiki/%E3%83%A1%E3%83%A2%E3%83%AA%E5%AE%89%E5%85%A8%E6%80%A7
+    - アクセスエラー
+      - バッファオーバーリード
+        - `df8108e  out of bounds bug`
+          - テストではエラーは出ず。ただ、KLEEはassert、およびout of bound pointerというNGを出した。
+        - `f5c9a47  miscalc of mid index`
+          - テストではエラーは出ず。ただ、KLEEはout of bound pointerというNGを出した。
+        - `3855d8d infinite loop bug`
+          - 無限ループのためテスト終了せず。また、KLEEはout of bound pointerというNGを出した。
+      - バッファオーバーフロー(書き込み)
+        - `df8108e out of bounds bug`
+          - テストではエラーは出ず。ただ、KLEEはassert、およびout of bound pointerというNGを出した。
+      - [未実施]競合状態(ロックミスによる読み書き同時実行)
+      - [未実施]無効ページフォルト
+      - 解放後使用
+        - テストでエラーが出て、KLEEはout of bound pointerというNGを出した。
+      - [未実施]キャストの型ミス
+    - [未実施]未初期化変数
+      - [未実施]Null Pointerアクセス
+      - [未実施]ワイルドポインタ(未初期化ポインタの参照)
+    - メモリリーク
+      - [未実施]スタックの枯渇
+      - [未実施]ヒープの枯渇
+      - 二重解放
+        - 実行すれば必ず発現するが、invalid pointer: freeとして出る場合と、out of bound pointerとして出る場合両方ある
+          - `e65d4bb double free and klee said invalid pointer: free`
+          - `2372463 double free but klee said out of bound pointer`
+      - [未実施]無効な解放
+      - [未実施]不一致な解放(複数のアロケータを使っている場合に、確保したアロケータと解放するアロケータが異なること)
+      - [未実施]free忘れ
+  - [未実施]メモリ以外
+    - 無限ループ
+    - デッドロック: ロックが取れなくて状態遷移できない
+    - ライブロック: 自発的な内部遷移を繰り返し、外部からの要求に応答しなくなること
+- [未実施]アプリ依存なバグ
+  - assertにひっかかるもの
+  - 性能不足
+
