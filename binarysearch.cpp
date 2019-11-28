@@ -2,6 +2,7 @@
 #include <klee/klee.h>
 #endif
 
+#include <stdio.h>
 #include <assert.h>
 
 #define SIZE 3
@@ -37,21 +38,17 @@ int main(void){
     int _a0, _a1, _a2;
     int key;
     int i, result;
+    char tmp[5] = {0};
 
 #ifdef KLEE
-    //klee_make_symbolic(&_a0, sizeof(int), "a0");
-    _a0 = klee_range(0, 5, "a0");
-    //klee_make_symbolic(&_a1, sizeof(int), "a1");
-    _a1 = klee_range(5, 10, "a1");
-    //klee_make_symbolic(&_a2, sizeof(int), "a2");
-    _a2 = klee_range(10, 15, "a2");
-    //klee_make_symbolic(&key, sizeof(key), "key");
+    for(i = 0; i < SIZE; i++) {
+        sprintf(tmp, "a%d", i);
+        a[i] = klee_range(5*i, 5*(i+1), tmp);
+        if(i != 0) {
+            klee_assume(a[i-1] <= a[i]);
+        }
+    }
     key = klee_range(-1, 16, "key");
-    klee_assume(_a0 <= _a1);
-    klee_assume(_a1 <= _a2);
-    a[0] = _a0;
-    a[1] = _a1;
-    a[2] = _a2;
 #endif
     result = binary_search(a, key);
     if(result >= 0){
