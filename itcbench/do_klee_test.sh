@@ -31,6 +31,13 @@ FILE_IDS["ow_memcpy.c"]=33
 FILE_IDS["buffer_overrun_dynamic.c"]=2
 FILE_IDS["buffer_underrun_dynamic.c"]=3
 FILE_IDS["deletion_of_data_structure_sentinel.c"]=11
+FILE_IDS["pow_related_errors.c"]=34
+FILE_IDS["sign_conv.c"]=39
+FILE_IDS["zero_division.c"]=51
+FILE_IDS["bit_shift.c"]=1
+FILE_IDS["data_lost.c"]=6
+FILE_IDS["data_overflow.c"]=7
+FILE_IDS["data_underflow.c"]=8
 
 ERROR_MESSAGE="Tool should detect this line as error"
 
@@ -41,6 +48,7 @@ ERROR_MESSAGE="Tool should detect this line as error"
 MAINFUNC_FILENAME=main.c
 TESTCODE_FILENAME=klee_test_
 RESULT_FILENAME=klee_test_result.txt
+KLEE=klee
 
 #--------------------------------#
 # sub
@@ -50,13 +58,25 @@ function clean {
     rm -rf *.bc klee-out* klee-last klee_test_*
 }
 
+function summary {
+    for i in `ls -lhsrt --color=none | grep drwx | perl -lane 'print $F[-1]' `; do
+        cat ${i}/klee_test_result.txt >> all_result.txt
+    done
+}
+
 function gen_testharness {
     local target_source_file=$1
     local output_filename=$2
     local tempfile=$(mktemp)
+
+    #if [ ${target_source_file} = "sign_conv.c" ]; then
+    #    cp ${target_source_file} ${output_filename}
+    #    return
+    #fi
+
     cat ${target_source_file} | perl -lane 's/(^extern .* vflag;$)/\/\/$1/g; print' > ${tempfile}
 
-    if [ `get_fileid ${target_source_file}` = "31" ]; then
+    if [ `get_fileid ${target_source_file}` = "31" -o `get_fileid ${target_source_file}` = "7" ]; then
         local tempfile2=$(mktemp)
         cat ${tempfile} | perl -lane 's/^(static int sink;)/\/\/$1/g; print' > ${tempfile2}
         mv ${tempfile2} ${tempfile}
@@ -66,7 +86,11 @@ function gen_testharness {
 }
 
 function compile_testcode {
-    clang -I ../../../include -I ../include -emit-llvm -DKLEE -DNDEBUG -c -g -O0 -Xclang -disable-O0-optnone $1
+    if [ $1 = "st_underrun.c" ]; then
+        clang -I ../../../include -I ../include -emit-llvm -DKLEE -DNDEBUG -c -O0 -Xclang -disable-O0-optnone $1
+    else
+        clang -I ../../../include -I ../include -emit-llvm -DKLEE -DNDEBUG -g -c -O0 -Xclang -disable-O0-optnone $1
+    fi
 }
 
 function get_fileid {
@@ -100,7 +124,7 @@ function do_klee_test {
     result_log "#---------------------------------------#"
 
     for i in ${test_ids}; do
-        klee ${bitcode_filename} ${file_id}`printf %03d ${i}`
+        ${KLEE} ${bitcode_filename} ${file_id}`printf %03d ${i}`
         if [ -e klee-last/*.err ]; then
             count_detect=$((count_detect+1))
             error_line_no=$(cat klee-last/*.err \
@@ -148,12 +172,17 @@ function result_save {
 #--------------------------------#
 
 if [ $# -ne 1 ]; then
-    echo "usage: $0 (target_source_file|clean)"
+    echo "usage: $0 (target_source_file|clean|summary)"
     exit 1
 fi
 
 if [ $1 = "clean" ]; then
     clean
+    exit 0
+fi
+
+if [ $1 = "summary" ]; then
+    summary
     exit 0
 fi
 
